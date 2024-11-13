@@ -12,7 +12,7 @@ export class ProductsService {
   }
 
   async findAll() :  Promise<CreateProductDto[]> {
-    const product = await this.prisma.product.findMany({where: {deletedAt: null}})
+    const product = await this.prisma.product.findMany()
 
     //Verifico si hay productos
     if(product.length === 0) throw new NotFoundException('Could Not Find Products')
@@ -20,15 +20,29 @@ export class ProductsService {
     return product;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: number, getDeletes?: boolean) : Promise<CreateProductDto>{
+    const where = { id, deletedAt: null };
+    if (getDeletes) delete where['deletedAt'];
+    const product = await this.prisma.product.findFirst({where});
+    if (!product) throw new NotFoundException('Product Not Found');
+
+    return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: number, updateUserDto: Partial<UpdateProductDto>, getDeletes?: boolean) {
+    const product = await this.findOne(id, getDeletes);
+    return await this.prisma.product.update({ where: { id }, data: updateUserDto });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number) {
+    const product = await this.findOne(id, false)
+
+    await this.update(id, { deletedAt: new Date() });
+    return `#${product.name} has been deleted`;
+  }
+
+  async restore(id: number) {
+    const product = await this.update(id, { deletedAt: null }, true);
+    return product;
   }
 }
