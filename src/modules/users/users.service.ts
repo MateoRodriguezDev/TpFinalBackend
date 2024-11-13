@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma.service';
+import { hashPassword } from 'src/helpers/bcrypt.helper';
 
 @Injectable()
 export class UsersService {
@@ -9,6 +10,9 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) : Promise<CreateUserDto> {
     const {email} = createUserDto
+
+    //Hasheo la contraseña
+    createUserDto.password = await hashPassword(createUserDto.password)
     
     //Verifico si el usuario existe
     const user = await this.prisma.user.findUnique({where: {email}})
@@ -29,6 +33,15 @@ export class UsersService {
 
   async findOne(id: number, getDeletes?: boolean) : Promise<CreateUserDto>{
     const where = { id, deletedAt: null };
+    if (getDeletes) delete where['deletedAt'];
+    const user = await this.prisma.user.findFirst({where});
+    if (!user) throw new NotFoundException('User Not Found');
+
+    return user;
+  }
+
+  async findOneByEmail(email: string, getDeletes?: boolean) : Promise<CreateUserDto>{
+    const where = { email, deletedAt: null };
     if (getDeletes) delete where['deletedAt'];
     const user = await this.prisma.user.findFirst({where});
     if (!user) throw new NotFoundException('User Not Found');
