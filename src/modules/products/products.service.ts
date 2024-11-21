@@ -12,7 +12,7 @@ export class ProductsService {
   }
 
   async findAll() :  Promise<CreateProductDto[]> {
-    const product = await this.prisma.product.findMany()
+    const product = await this.prisma.product.findMany({where: {deletedAt: null}})
 
     //Verifico si hay productos
     if(product.length === 0) throw new NotFoundException('Could Not Find Products')
@@ -38,7 +38,7 @@ export class ProductsService {
     const product = await this.findOne(id, false)
 
     await this.update(id, { deletedAt: new Date() });
-    return `#${product.name} has been deleted`;
+    return `#${id} has been deleted`;
   }
 
   async restore(id: number) {

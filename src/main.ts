@@ -11,6 +11,11 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  app.enableCors({
+    origin: 'http://localhost:5173', // Permitir solo esta URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos permitidos (opcional)
+    credentials: true, // Permitir envío de cookies o credenciales si es necesario
+  });
   await app.listen(process.env.PORT ?? 3000);
 
 }

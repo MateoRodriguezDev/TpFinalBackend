@@ -1,12 +1,13 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma.service';
 import { hashPassword } from 'src/helpers/bcrypt.helper';
+import { REQUEST } from '@nestjs/core';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService){}
+  constructor(private prisma: PrismaService, @Inject(REQUEST) private readonly request: Request){}
 
   async create(createUserDto: CreateUserDto) : Promise<CreateUserDto> {
     const {email} = createUserDto
@@ -16,7 +17,11 @@ export class UsersService {
     
     //Verifico si el usuario existe
     const user = await this.prisma.user.findUnique({where: {email}})
-    if(user) throw new BadRequestException('User Already Exists')
+    if(!user.deletedAt) throw new BadRequestException('User Already Exists')
+    
+    //Si el usuario tiene un deletedAt quiere decir que fue borrado
+    //Osea que puedo usar su correo para crear otro usuario
+    await this.prisma.user.delete({where: {email: user.email}})
 
     //Creo el usuario
     return await this.prisma.user.create({data: {...createUserDto}})
@@ -71,9 +76,28 @@ export class UsersService {
     return user;
   }
 
+  async changeRole(id: number) {
+    const user = await this.findOne(id)
+  
+    if(user.role === 'admin'){
+      const newUser = this.update(id, {role: 'user'})
+      return newUser
+    }else if(user.role === 'user'){
+      const newUser = await this.update(id, {role: 'admin'})
+      return newUser
+    }else{
+      throw new BadRequestException('Superadmin cant change role')
+    }
+  
+  }
+
 
   async remove(id: number) {
     const user = await this.findOne(id, false)
+
+    if(user.role === 'superadmin'){
+      throw new BadRequestException('Superadmin cant be deleted')
+    }
 
     await this.update(id, { deletedAt: new Date() });
     return `#${user.email} has been deleted`;
@@ -83,6 +107,8 @@ export class UsersService {
     const user = await this.update(id, { deletedAt: null }, true);
     return user;
   }
+
+  
 
 
 }

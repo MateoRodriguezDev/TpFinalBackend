@@ -2,7 +2,9 @@ import {IsDate, IsEmail, IsNotEmpty, IsOptional, IsString, MinLength} from 'clas
 import { Transform } from 'class-transformer'
 
 export class CreateUserDto {
-    
+    @IsOptional()
+    id?: number
+
     @IsNotEmpty()
     @IsEmail()
     email: string

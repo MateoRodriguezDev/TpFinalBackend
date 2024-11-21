@@ -47,6 +47,12 @@ export class UsersController {
     return this.usersService.changeToUser(+id);
   }
 
+  @Patch('role/:id')
+  @Roles('superadmin')
+  changeRole(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.changeRole(+id);
+  }
+
   @Delete(':id')
   @Roles('superadmin')
   remove(@Param('id', ParseIntPipe) id: number) {
@@ -58,4 +64,6 @@ export class UsersController {
   restore(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.restore(+id);
   }
+
+ 
 }
