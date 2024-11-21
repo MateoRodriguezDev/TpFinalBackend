@@ -19,7 +19,6 @@ import { RegisterDto } from "./dto/register-dto";
 
     async login({ email, password }: LoginDto) {
         const user = await this.usersService.findOneByEmail(email);
-    
         if (!user) {
           throw new UnauthorizedException("Invalid email");
         }

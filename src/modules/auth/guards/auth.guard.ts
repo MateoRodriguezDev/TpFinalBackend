@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     try {
       //Verifica el token con la palabra secreta
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.SECRET_WORD,
+        secret: process.env.TOKEN,
       });
 
       //Guarda una copia del usuario extraido del token en el request
