@@ -35,17 +35,7 @@ export class UsersController {
     return this.usersService.update(+id, updateUserDto);
   }
 
-  @Patch('admin/:id')
-  @Roles('superadmin')
-  changeToAdmin(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.changeToAdmin(+id);
-  }
 
-  @Patch('user/:id')
-  @Roles('superadmin')
-  changeToUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.changeToUser(+id);
-  }
 
   @Patch('role/:id')
   @Roles('superadmin')

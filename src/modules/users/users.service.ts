@@ -14,7 +14,6 @@ import { REQUEST } from '@nestjs/core';
 export class UsersService {
   constructor(
     private prisma: PrismaService,
-    @Inject(REQUEST) private readonly request: Request,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<CreateUserDto> {
@@ -92,16 +91,6 @@ export class UsersService {
     });
   }
 
-  async changeToAdmin(id: number) {
-    const user = await this.update(id, { role: 'admin' }, false);
-    return user;
-  }
-
-  async changeToUser(id: number) {
-    const user = await this.update(id, { role: 'user' }, false);
-    return user;
-  }
-
   async changeRole(id: number) {
     const user = await this.findOne(id);
 
@@ -124,7 +113,7 @@ export class UsersService {
     }
 
     await this.update(id, { deletedAt: new Date() });
-    return `#${user.email} has been deleted`;
+    return `${user.email} has been deleted`;
   }
 
   async restore(id: number) {
